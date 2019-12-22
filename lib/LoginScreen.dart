@@ -2,6 +2,8 @@ import 'dart:developer';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:scoring_flutter/Widgets.dart';
+import 'package:scoring_flutter/ScoringFreestyleScreen.dart';
 import 'package:scoring_flutter/ScoringRecognizedScreen.dart';
 
 
@@ -119,8 +121,8 @@ class _LoginPageState extends State<LoginPage> {
                                     MaterialPageRoute(
                                       builder: (context)
                                       {
-                                        return new ScorePage(
-                                          data: new ScoreData(
+                                        return new ScoreRecognizedPage(
+                                          data: ScoreData(
                                             number: "0",
                                             athlete: "Athlete Name",
                                             origin: "--",
@@ -140,6 +142,24 @@ class _LoginPageState extends State<LoginPage> {
                                 child: new Text("Freestyle"),
                                 onPressed: () {
                                   Navigator.of(context).pop();
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context)
+                                      {
+                                        return new ScoreFreestylePage(
+                                            data: ScoreData(
+                                              number: "0",
+                                              athlete: "Athlete Name",
+                                              origin: "--",
+                                              category: "Category",
+                                              round: "Round",
+                                              judge: "Judge number #",
+                                            )
+                                        );
+                                      }
+                                    )
+                                  );
                                 },
                               ),
                             ],

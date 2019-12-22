@@ -5,66 +5,29 @@ import 'package:scoring_flutter/Widgets.dart';
 import 'dart:developer';
 import 'package:share/share.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:scoring_flutter/ScoringRecognizedScreen.dart';
 
 
-class ScoreData {
-  final String number;
-  final String athlete;
-  final String origin;
-  final String judge;
-  final String poomsae;
-  final String poomsae_number;
-  final String round;
-  final String category;
+class ScoreFreestylePage extends StatefulWidget {
 
-  ScoreData({String number = "-1", String athlete = "None", String origin = "None", String judge = "None",
-    String poomsae = "None", String round = "None", String category = "None", String poomsae_number}) :
-        this.number = number,
-        this.athlete = athlete,
-        this.origin = origin,
-        this.judge = judge,
-        this.poomsae = poomsae,
-        this.round = round,
-        this.category = category,
-        this.poomsae_number = poomsae_number;
-
+  final ScoreData _data;
+  final bool _offline;
+  ScoreFreestylePage({ScoreData data, Key key, bool offline = true})   : _data = data, _offline = offline,  super(key: key);
   @override
-  String toString() {
-    return "Number: " + number + "\n" +
-        "Athlete: " + athlete + "\n" +
-        "Origin: " + origin + "\n" +
-        "Judge: " + judge + "\n" +
-        "Poomsae: " + poomsae_number + " - " + poomsae + "\n" +
-        "Round: " + round + "\n" +
-        "Category: " + category + "\n";
-  }
-}
-
-class ScoreRecognizedPage extends StatefulWidget {
-
-    final ScoreData _data;
-    final bool _offline;
-    ScoreRecognizedPage({ScoreData data, Key key, bool offline = true})   : _data = data, _offline = offline,  super(key: key);
-    @override
-    ScoreRecognizedPageState createState() => ScoreRecognizedPageState();
+  ScoreFreestylePageState createState() => ScoreFreestylePageState();
 
 }
 
-class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
+class ScoreFreestylePageState extends State<ScoreFreestylePage> {
 
-  final _presentationScore = new GlobalKey<PresentationState>();
-  final _majorAccuracy = new GlobalKey<LeftButtonState>();
-  final _minorAccuracy = new GlobalKey<RightButtonState>();
+  final _presentationFSScore = new GlobalKey<PresentationFSState>();
   final _scoreDisplay = new GlobalKey<ScoreRecognizedState>();
   final _timerDisplay = new GlobalKey<TimerState>();
-  final _accuracyDisplay = new GlobalKey<AccuracyState>();
+  final _technicalSkillScore = new GlobalKey<TechnicalSkillState>();
 
-  double _acc, _pres;
-
-  final double _maxPresentation = 6.0;
-  final double _maxAccuracy = 4.0;
-  final double _majorDiscount = 0.3;
-  final double _minorDiscount = 0.1;
+  final double _maxPresentation = 4.0;
+  final double _maxTechnicalSkill = 6.0;
+  double _ts, _pres;
 
   @override
   void initState() {
@@ -76,30 +39,34 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
     ]);
     SchedulerBinding.instance.addPostFrameCallback((_) => updateScore());
   }
-  
+
   void updateScore() {
-    int c1 = _minorAccuracy.currentState.getCount();
-    int c2 = _majorAccuracy.currentState.getCount();
-    
-    double p1 = _presentationScore.currentState.getEnergy();
-    double p2 = _presentationScore.currentState.getSpeed();
-    double p3 = _presentationScore.currentState.getTempo();
+    _ts = _technicalSkillScore.currentState.getAcrobatic() +
+          _technicalSkillScore.currentState.getBasic() +
+          _technicalSkillScore.currentState.getHeight() +
+          _technicalSkillScore.currentState.getKicks() +
+          _technicalSkillScore.currentState.getSparring() +
+          _technicalSkillScore.currentState.getSpins();
+    _ts = math.max(math.min(_ts, _maxTechnicalSkill), 0.0);
 
-    _pres = math.max(math.min(_maxPresentation, p1+p2+p3), 0);
-    _acc = math.max(math.min(_maxAccuracy, _maxAccuracy - (c1 * _minorDiscount + c2 * _majorDiscount)), 0);
+    _pres = _presentationFSScore.currentState.getEnergy() +
+            _presentationFSScore.currentState.getCoreography() +
+            _presentationFSScore.currentState.getCreativity() +
+            _presentationFSScore.currentState.getHarmony();
 
-    _accuracyDisplay.currentState.setAccuracy(_acc);
-    _scoreDisplay.currentState.setAccuracy(_acc);
+    _pres = math.max(math.min(_pres, _maxPresentation), 0.0);
+
     _scoreDisplay.currentState.setPresentation(_pres);
+    _scoreDisplay.currentState.setAccuracy(_ts);
   }
 
   void share() {
     updateScore();
     Share.share(
-      "Poomsae score\n" +
-      "Total: " + (_acc + _pres).toStringAsFixed(1) + "\n" +
-      "Accuracy: " + _acc.toStringAsFixed(1) + "\n" +
-      "Presentation: " + _pres.toStringAsFixed(1)
+        "Poomsae score\n" +
+            "Total: " + (_ts + _pres).toStringAsFixed(1) + "\n" +
+            "Technichal skill: " + _ts.toStringAsFixed(1) + "\n" +
+            "Presentation: " + _pres.toStringAsFixed(1)
     );
   }
 
@@ -108,9 +75,8 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
   }
 
   void reset() {
-    _minorAccuracy.currentState.resetCount();
-    _majorAccuracy.currentState.resetCount();
-    _presentationScore.currentState.reset();
+    _presentationFSScore.currentState.reset();
+    _technicalSkillScore.currentState.reset();
     _timerDisplay.currentState.reset();
     updateScore();
   }
@@ -139,7 +105,7 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
                 DeviceOrientation.portraitUp,
                 DeviceOrientation.portraitDown,
               ]);
-              },
+            },
             child: new Text('Yes'),
           ),
         ],
@@ -154,10 +120,10 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
       onWillPop: _onWillPop,
       child: Scaffold(
         body: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.rectangle,
-              color: Colors.black,
-            ),
+          decoration: BoxDecoration(
+            shape: BoxShape.rectangle,
+            color: Colors.black,
+          ),
           child: Column(
             children: <Widget>[
               Row(
@@ -191,10 +157,7 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
                       TimerDisplay(
                         key: _timerDisplay,
                       ),
-                      PoomsaeDisplay(
-                        name: widget._data.poomsae,
-                        number: widget._data.poomsae_number,
-                      ),
+
                     ],
                   ),
                   Flexible(
@@ -216,38 +179,19 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Flexible(
-                    child: LeftButton(
-                      key: _majorAccuracy,
-                      onChanged: (){
-                        updateScore();
-                      },
-                    ),
+                  TechnicalSkillDisplay(
+                    key: _technicalSkillScore,
+                    onChanged: () {
+                      updateScore();
+                    },
                   ),
-                  Column(
-                    children: <Widget>[
-                      AccuracyDisplay(
-                        key: _accuracyDisplay,
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      PresentationDisplay(
-                        key: _presentationScore,
-                        onChanged: () {
-                          updateScore();
-                        },
-                      ),
-                    ],
-                  ),
-                  Flexible(
-                    child: RightButton(
-                      key: _minorAccuracy,
-                      onChanged: () {
-                        updateScore();
-                      },
-                    ),
-                  ),
+                  PresentationFSDisplay(
+                    key: _presentationFSScore,
+                    onChanged: ()
+                    {
+                      updateScore();
+                    },
+                  )
                 ],
               ),
               Expanded(

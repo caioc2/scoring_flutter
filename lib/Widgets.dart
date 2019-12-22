@@ -992,3 +992,777 @@ class ControlButton extends StatelessWidget {
     );
   }
 }
+
+
+
+//FreeStyle
+class PresentationFSDisplay extends StatefulWidget {
+
+  final VoidCallback _onChanged;
+  PresentationFSDisplay({Key key, VoidCallback onChanged}) : _onChanged = onChanged, super(key: key);
+
+  PresentationFSState createState() => PresentationFSState();
+}
+
+class PresentationFSState extends State<PresentationFSDisplay> {
+
+  final double maxItem = 1.0;
+  double _creativity = 0.0;
+  double _harmony = 0.0;
+  double _energy = 0.0;
+  double _choreography = 0.0;
+
+
+  void reset() {
+    setState(() {
+      _energy = 0.0;
+      _creativity = 0.0;
+      _harmony = 0.0;
+      _choreography = 0.0;
+    });
+  }
+
+  double getCreativity() {
+    return _creativity;
+  }
+
+  double getHarmony() {
+    return _harmony;
+  }
+
+  double getEnergy() {
+    return _energy;
+  }
+
+  double getCoreography() {
+    return _choreography;
+  }
+
+  Widget build(BuildContext context) {//Duplicated sizing
+    return Container (
+      height: 190,
+      width: 260,
+      decoration: BoxDecoration(
+        shape: BoxShape.rectangle,
+        color: Colors.black,
+      ),
+      child: Row(
+        children: <Widget> [
+          Container (
+            height: 190,
+            width: 200,
+            decoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              gradient: LinearGradient(
+                colors: <Color>[
+                  Colors.black,
+                  Colors.lightBlue,
+                  Colors.black,
+                ],
+              ),
+            ),
+            padding: EdgeInsets.only(
+              top: 2.0,
+              bottom: 2.0,
+            ),
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                color: Colors.black,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Container (
+                    height: 40,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      color: Colors.black,
+                    ),
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.only(
+                      left: 10.0,
+                      right: 10.0,
+                    ),
+                    child: Text("Creativity",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                  Container (
+                    height: 40,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      color: Colors.black,
+                    ),
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.only(
+                      left: 10.0,
+                      right: 10.0,
+                    ),
+                    child: Text("Harmony",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                  Container (
+                    height: 40,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      color: Colors.black,
+                    ),
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.only(
+                      left: 10.0,
+                      right: 10.0,
+                    ),
+                    child: Text("Expression of Energy",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                  Container (
+                    height: 40,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      color: Colors.black,
+                    ),
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.only(
+                      left: 10.0,
+                      right: 10.0,
+                    ),
+                    child: Text("Coreography",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            width: 60,
+            height: 190,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget> [
+                Container(
+                  height: 40,
+                  width: 60,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    color: Colors.redAccent,
+                    border: Border.all(
+                      color: Colors.redAccent,
+                      width: 2.0,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<double>(
+                      value: _creativity,
+                      icon: Icon(Icons.arrow_downward),
+                      iconSize: 0,
+                      elevation: 16,
+                      onChanged: (double newValue) {
+                        setState(() {
+                          _creativity = newValue;
+                          widget._onChanged();
+                        });
+                      },
+                      items: <double>[0.0 , 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,]
+                          .map<DropdownMenuItem<double>>((double value) {
+                        return DropdownMenuItem<double>(
+                          value: value,
+                          child: Text(value.toStringAsFixed(1), style: TextStyle(fontSize: 30, color: Colors.black38,),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 40,
+                  width: 60,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    color: Colors.redAccent,
+                    border: Border.all(
+                      color: Colors.redAccent,
+                      width: 2.0,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<double>(
+                      value: _harmony,
+                      icon: Icon(Icons.arrow_downward),
+                      iconSize: 0,
+                      elevation: 16,
+                      onChanged: (double newValue) {
+                        setState(() {
+                          _harmony = newValue;
+                          widget._onChanged();
+                        });
+                      },
+                      items: <double>[0.0 , 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,]
+                          .map<DropdownMenuItem<double>>((double value) {
+                        return DropdownMenuItem<double>(
+                          value: value,
+                          child: Text(value.toStringAsFixed(1), style: TextStyle(fontSize: 30, color: Colors.black38,),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 40,
+                  width: 60,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    color: Colors.redAccent,
+                    border: Border.all(
+                      color: Colors.redAccent,
+                      width: 2.0,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<double>(
+                      value: _energy,
+                      icon: Icon(Icons.arrow_downward),
+                      iconSize: 0,
+                      elevation: 16,
+                      onChanged: (double newValue) {
+                        setState(() {
+                          _energy = newValue;
+                          widget._onChanged();
+                        });
+                      },
+                      items: <double>[0.0 , 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,]
+                          .map<DropdownMenuItem<double>>((double value) {
+                        return DropdownMenuItem<double>(
+                          value: value,
+                          child: Text(value.toStringAsFixed(1), style: TextStyle(fontSize: 30, color: Colors.black38,),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 40,
+                  width: 60,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    color: Colors.redAccent,
+                    border: Border.all(
+                      color: Colors.redAccent,
+                      width: 2.0,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<double>(
+                      value: _choreography,
+                      icon: Icon(Icons.arrow_downward),
+                      iconSize: 0,
+                      elevation: 16,
+                      onChanged: (double newValue) {
+                        setState(() {
+                          _choreography = newValue;
+                          widget._onChanged();
+                        });
+                      },
+                      items: <double>[0.0 , 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,]
+                          .map<DropdownMenuItem<double>>((double value) {
+                        return DropdownMenuItem<double>(
+                          value: value,
+                          child: Text(value.toStringAsFixed(1), style: TextStyle(fontSize: 30, color: Colors.black38,),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+
+class TechnicalSkillDisplay extends StatefulWidget {
+
+  final VoidCallback _onChanged;
+  TechnicalSkillDisplay({Key key, VoidCallback onChanged}) : _onChanged = onChanged, super(key: key);
+
+  TechnicalSkillState createState() => TechnicalSkillState();
+}
+
+class TechnicalSkillState extends State<TechnicalSkillDisplay> {
+
+  final double maxItem = 1.0;
+  double _height = 0.0;
+  double _kicks = 0.0;
+  double _spins = 0.0;
+  double _sparring = 0.0;
+  double _acrobatic = 0.0;
+  double _basic = 0.0;
+
+
+  void reset() {
+    setState(() {
+      _height = 0.0;
+      _kicks = 0.0;
+      _spins = 0.0;
+      _sparring = 0.0;
+      _acrobatic = 0.0;
+      _basic = 0.0;
+    });
+  }
+
+  double getHeight() {
+    return _height;
+  }
+
+  double getKicks() {
+    return _kicks;
+  }
+
+  double getSpins() {
+    return _spins;
+  }
+
+  double getSparring() {
+    return _sparring;
+  }
+
+  double getAcrobatic() {
+    return _acrobatic;
+  }
+
+  double getBasic() {
+    return _basic;
+  }
+
+  Widget build(BuildContext context) {
+    return Container (
+      height: 140,
+      width: 520,
+      decoration: BoxDecoration(
+        shape: BoxShape.rectangle,
+        color: Colors.black,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget> [
+          Container (
+            height: 140,
+            width: 180,
+            decoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              gradient: LinearGradient(
+                colors: <Color>[
+                  Colors.black,
+                  Colors.lightBlue,
+                  Colors.black,
+                ],
+              ),
+            ),
+            padding: EdgeInsets.only(
+              top: 2.0,
+              bottom: 2.0,
+            ),
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                color: Colors.black,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Container (
+                    height: 40,
+                    width: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      color: Colors.black,
+                    ),
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.only(
+                      left: 10.0,
+                      right: 10.0,
+                    ),
+                    child: Text("Jump height",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                  Container (
+                    height: 40,
+                    width: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      color: Colors.black,
+                    ),
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.only(
+                      left: 10.0,
+                      right: 10.0,
+                    ),
+                    child: Text("Jumping kicks",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                  Container (
+                    height: 40,
+                    width: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      color: Colors.black,
+                    ),
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.only(
+                      left: 10.0,
+                      right: 10.0,
+                    ),
+                    child: Text("Gradient of spins",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Container(
+            width: 60,
+            height: 140,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget> [
+                Container(
+                  height: 40,
+                  width: 60,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    color: Colors.redAccent,
+                    border: Border.all(
+                      color: Colors.redAccent,
+                      width: 2.0,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<double>(
+                      value: _height,
+                      icon: Icon(Icons.arrow_downward),
+                      iconSize: 0,
+                      elevation: 16,
+                      onChanged: (double newValue) {
+                        setState(() {
+                          _height = newValue;
+                          widget._onChanged();
+                        });
+                      },
+                      items: <double>[0.0 , 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,]
+                          .map<DropdownMenuItem<double>>((double value) {
+                        return DropdownMenuItem<double>(
+                          value: value,
+                          child: Text(value.toStringAsFixed(1), style: TextStyle(fontSize: 30, color: Colors.black38,),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 40,
+                  width: 60,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    color: Colors.redAccent,
+                    border: Border.all(
+                      color: Colors.redAccent,
+                      width: 2.0,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<double>(
+                      value: _kicks,
+                      icon: Icon(Icons.arrow_downward),
+                      iconSize: 0,
+                      elevation: 16,
+                      onChanged: (double newValue) {
+                        setState(() {
+                          _kicks = newValue;
+                          widget._onChanged();
+                        });
+                      },
+                      items: <double>[0.0 , 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,]
+                          .map<DropdownMenuItem<double>>((double value) {
+                        return DropdownMenuItem<double>(
+                          value: value,
+                          child: Text(value.toStringAsFixed(1), style: TextStyle(fontSize: 30, color: Colors.black38,),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 40,
+                  width: 60,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    color: Colors.redAccent,
+                    border: Border.all(
+                      color: Colors.redAccent,
+                      width: 2.0,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<double>(
+                      value: _spins,
+                      icon: Icon(Icons.arrow_downward),
+                      iconSize: 0,
+                      elevation: 16,
+                      onChanged: (double newValue) {
+                        setState(() {
+                          _spins = newValue;
+                          widget._onChanged();
+                        });
+                      },
+                      items: <double>[0.0 , 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,]
+                          .map<DropdownMenuItem<double>>((double value) {
+                        return DropdownMenuItem<double>(
+                          value: value,
+                          child: Text(value.toStringAsFixed(1), style: TextStyle(fontSize: 30, color: Colors.black38,),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            width: 60,
+            height: 140,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget> [
+                Container(
+                  height: 40,
+                  width: 60,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    color: Colors.redAccent,
+                    border: Border.all(
+                      color: Colors.redAccent,
+                      width: 2.0,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<double>(
+                      value: _sparring,
+                      icon: Icon(Icons.arrow_downward),
+                      iconSize: 0,
+                      elevation: 16,
+                      onChanged: (double newValue) {
+                        setState(() {
+                          _sparring = newValue;
+                          widget._onChanged();
+                        });
+                      },
+                      items: <double>[0.0 , 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,]
+                          .map<DropdownMenuItem<double>>((double value) {
+                        return DropdownMenuItem<double>(
+                          value: value,
+                          child: Text(value.toStringAsFixed(1), style: TextStyle(fontSize: 30, color: Colors.black38,),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 40,
+                  width: 60,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    color: Colors.redAccent,
+                    border: Border.all(
+                      color: Colors.redAccent,
+                      width: 2.0,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<double>(
+                      value: _acrobatic,
+                      icon: Icon(Icons.arrow_downward),
+                      iconSize: 0,
+                      elevation: 16,
+                      onChanged: (double newValue) {
+                        setState(() {
+                          _acrobatic = newValue;
+                          widget._onChanged();
+                        });
+                      },
+                      items: <double>[0.0 , 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,]
+                          .map<DropdownMenuItem<double>>((double value) {
+                        return DropdownMenuItem<double>(
+                          value: value,
+                          child: Text(value.toStringAsFixed(1), style: TextStyle(fontSize: 30, color: Colors.black38,),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                Container(
+                  height: 40,
+                  width: 60,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    color: Colors.redAccent,
+                    border: Border.all(
+                      color: Colors.redAccent,
+                      width: 2.0,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<double>(
+                      value: _basic,
+                      icon: Icon(Icons.arrow_downward),
+                      iconSize: 0,
+                      elevation: 16,
+                      onChanged: (double newValue) {
+                        setState(() {
+                          _basic = newValue;
+                          widget._onChanged();
+                        });
+                      },
+                      items: <double>[0.0 , 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,]
+                          .map<DropdownMenuItem<double>>((double value) {
+                        return DropdownMenuItem<double>(
+                          value: value,
+                          child: Text(value.toStringAsFixed(1), style: TextStyle(fontSize: 30, color: Colors.black38,),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container (
+            height: 140,
+            width: 180,
+            decoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              gradient: LinearGradient(
+                colors: <Color>[
+                  Colors.black,
+                  Colors.lightBlue,
+                  Colors.black,
+                ],
+              ),
+            ),
+            padding: EdgeInsets.only(
+              top: 2.0,
+              bottom: 2.0,
+            ),
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                color: Colors.black,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Container (
+                    height: 40,
+                    width: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      color: Colors.black,
+                    ),
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.only(
+                      left: 10.0,
+                      right: 10.0,
+                    ),
+                    child: Text("Sparring kicks",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                  Container (
+                    height: 40,
+                    width: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      color: Colors.black,
+                    ),
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.only(
+                      left: 10.0,
+                      right: 10.0,
+                    ),
+                    child: Text("Acrobatics",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                  Container (
+                    height: 40,
+                    width: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      color: Colors.black,
+                    ),
+                    alignment: Alignment.centerLeft,
+                    padding: EdgeInsets.only(
+                      left: 10.0,
+                      right: 10.0,
+                    ),
+                    child: Text("Basic",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
