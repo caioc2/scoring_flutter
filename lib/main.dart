@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       //home: LoginPage(),
-      home: ScorePage(data: new ScoreData(
+      home: LoginPage(),/*ScorePage(data: new ScoreData(
         number: "7",
         athlete: "Athlete Name",
         origin: "BR",
@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
         poomsae: "Pyongwon",
         poomsae_number: "2",
         judge: "Judge number 2",
-      )),
+      )),*/
     );
   }
 }

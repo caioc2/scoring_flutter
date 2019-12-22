@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:scoring_flutter/Widgets.dart';
 import 'dart:developer';
+import 'package:share/share.dart';
+import 'package:flutter/scheduler.dart';
+
 
 class ScoreData {
   final String number;
@@ -38,11 +41,13 @@ class ScoreData {
 }
 
 class ScorePage extends StatefulWidget {
-  
+
     final ScoreData _data;
-    ScorePage({ScoreData data, Key key})   : _data = data, super(key: key);
+    final bool _offline;
+    ScorePage({ScoreData data, Key key, bool offline = true})   : _data = data, _offline = offline,  super(key: key);
     @override
     ScorePageState createState() => ScorePageState();
+
 }
 
 class ScorePageState extends State<ScorePage> {
@@ -60,6 +65,17 @@ class ScorePageState extends State<ScorePage> {
   final double _maxAccuracy = 4.0;
   final double _majorDiscount = 0.3;
   final double _minorDiscount = 0.1;
+
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setEnabledSystemUIOverlays([]);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
+    SchedulerBinding.instance.addPostFrameCallback((_) => updateScore());
+  }
   
   void updateScore() {
     int c1 = _minorAccuracy.currentState.getCount();
@@ -77,14 +93,66 @@ class ScorePageState extends State<ScorePage> {
     _scoreDisplay.currentState.setPresentation(_pres);
   }
 
+  void share() {
+    updateScore();
+    Share.share(
+      "Poomsae score\n" +
+      "Total: " + (_acc + _pres).toString() + "\n" +
+      "Accuracy: " + _acc.toString() + "\n" +
+      "Presentation: " + _pres.toString()
+    );
+  }
+
+  void startStop() {
+    _timerDisplay.currentState.toggle();
+  }
+
+  void reset() {
+    _minorAccuracy.currentState.resetCount();
+    _majorAccuracy.currentState.resetCount();
+    _presentationScore.currentState.reset();
+    _timerDisplay.currentState.reset();
+    updateScore();
+  }
+
+  void send() {
+
+  }
+
+  Future<bool> _onWillPop() {
+    return showDialog(
+      context: context,
+      builder: (context) => new AlertDialog(
+        title: new Text('Are you sure?'),
+        content: new Text('Do you want to exit an score board'),
+        actions: <Widget>[
+          new FlatButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: new Text('No'),
+          ),
+          new FlatButton(
+            onPressed: () {
+              Navigator.of(context).pop(true);
+              SystemChrome.setPreferredOrientations([
+                DeviceOrientation.landscapeRight,
+                DeviceOrientation.landscapeLeft,
+                DeviceOrientation.portraitUp,
+                DeviceOrientation.portraitDown,
+              ]);
+              },
+            child: new Text('Yes'),
+          ),
+        ],
+      ),
+    ) ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIOverlays([]);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-    ]);
-    return Scaffold(
+
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
         body: Container(
             decoration: BoxDecoration(
               shape: BoxShape.rectangle,
@@ -185,33 +253,20 @@ class ScorePageState extends State<ScorePage> {
               Expanded(
                 child: Container(
                   alignment: Alignment.center,
-                  child: Container(
-                    width: 100,
-                    height: 40,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: Colors.grey,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 2.0,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: FlatButton(
-                      onPressed: () {
-                        //TODO send
-                      },
-                      child: Text("Send",
-                        style: TextStyle(fontSize: 20, color: Colors.white),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: buildButtons(widget._offline,
+                            () {reset();},
+                            () {send();},
+                            () {startStop();},
+                            () {share();}),
                   ),
                 ),
               ),
             ],
           ),
         ),
+      ),
     );
   }
 }

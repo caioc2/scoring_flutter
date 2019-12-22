@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 
 class LeftButton extends StatefulWidget {
@@ -234,19 +235,67 @@ class TimerDisplay extends StatefulWidget {
 class TimerState extends State<TimerDisplay> {
 
   final int _maxSeconds = 300;
+  final int _refreshRate = 50;
+  final Stopwatch _stopwatch = new Stopwatch();
 
   String _minutes = "0";
   String _seconds = "00";
+  int _second = 0;
 
-  void setTime(int seconds) {
-    if(seconds < 0)
-      seconds = 0;
+  Timer timer;
 
-    if(seconds > _maxSeconds)
-      seconds = 300;
+  @override
+  void initState() {
+    timer = new Timer.periodic(new Duration(milliseconds: _refreshRate), updateTime);
+    super.initState();
+  }
 
-    _seconds = (seconds % 60).toString().padLeft(2,'0');
-    _minutes = (seconds / 60).toString();
+  void updateTime(Timer time) {
+    if(_second != _stopwatch.elapsed.inSeconds) {
+      _second = _stopwatch.elapsed.inSeconds;
+      if(_second > _maxSeconds) {
+        _second = _maxSeconds;
+
+        if(_stopwatch.isRunning)
+          _stopwatch.stop();
+      }
+      setState(() {
+        _seconds = (_second % 60).toString().padLeft(2,'0');
+        _minutes = (_second ~/ 60).toString();
+      });
+    }
+  }
+
+  void reset() {
+    stop();
+    _stopwatch.reset();
+    setState(() {
+      _minutes = "0";
+      _seconds = "00";
+      _second = 0;
+    });
+  }
+
+  void start() {
+    if(!_stopwatch.isRunning)
+      _stopwatch.start();
+  }
+
+  void stop() {
+    if(_stopwatch.isRunning)
+      _stopwatch.stop();
+  }
+
+  void toggle() {
+    if(_stopwatch.isRunning) {
+      _stopwatch.stop();
+    } else {
+      if(_second > 0 ){
+        reset();
+      } else {
+        _stopwatch.start();
+      }
+    }
   }
 
   Widget build(BuildContext context) {//Duplicated sizing
@@ -349,7 +398,6 @@ class CompetitorNumberDisplay extends StatelessWidget {
   }
 }
 
-
 class PoomsaeDisplay extends StatelessWidget {
 
   final String _name;
@@ -402,7 +450,6 @@ class JudgeDisplay extends StatelessWidget {
     );
   }
 }
-
 
 class ScoreRecognizedDisplay extends StatefulWidget {
 
@@ -649,6 +696,14 @@ class PresentationState extends State<PresentationDisplay> {
     });
   }
 
+  void reset() {
+    setState(() {
+      _energy = 0.0;
+      _tempo = 0.0;
+      _speed = 0.0;
+    });
+  }
+
   double getSpeed() {
     return _speed;
   }
@@ -871,6 +926,68 @@ class PresentationState extends State<PresentationDisplay> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+List<Widget> buildButtons(bool offline, VoidCallback reset, VoidCallback send, VoidCallback startStop, VoidCallback share) {
+
+  if(offline) {
+    return [
+      ControlButton(
+        text: "Reset",
+        callback: reset,
+      ),
+      ControlButton(
+        text: "Timer",
+        callback: startStop,
+      ),
+      ControlButton(
+        text: "Share",
+        callback: share
+      ),
+    ];
+  } else {
+    return [
+      ControlButton(
+        text: "Send",
+        callback: send,
+      ),
+    ];
+  }
+}
+
+class ControlButton extends StatelessWidget {
+
+  final VoidCallback _callback;
+  final String _text;
+
+  ControlButton({String text, VoidCallback callback})
+      : _text = text,
+        _callback = callback;
+
+  Widget build(BuildContext context) {
+    return Container(
+      width: 100,
+      height: 40,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.grey,
+        border: Border.all(
+          color: Colors.white,
+          width: 2.0,
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: FlatButton(
+        onPressed: () {
+          _callback();
+        },
+        child: Text("$_text",
+          style: TextStyle(fontSize: 20, color: Colors.white),
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }

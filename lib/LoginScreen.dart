@@ -1,6 +1,8 @@
 import 'dart:developer';
+import 'package:flutter/services.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:scoring_flutter/ScoringRecognizedScreen.dart';
 
 
 
@@ -13,6 +15,7 @@ class _LoginPageState extends State<LoginPage> {
 
 
   final _login_form = GlobalKey<FormState>();
+  int _offline_mode = 0;
 
   String _login;
   String _ip_address;
@@ -25,7 +28,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-
    loginController.addListener(() {
       if(loginController.text != _login) {
 
@@ -63,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Test Login"),
+        title: Text("Login"),
       ),
       body: Container(
         padding: EdgeInsets.all(20.0),
@@ -95,8 +97,61 @@ class _LoginPageState extends State<LoginPage> {
                   log("VAlid");
                 }
             }),
-          ],
-        ),
+            Expanded(
+              child: Container(
+                alignment: Alignment.bottomLeft,
+                child: RaisedButton(
+                    child: Text("OFFLINE"),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: new Text("Offline mode"),
+                            content: new Text("Start in offline mode"),
+                            actions: <Widget>[
+                              new FlatButton(
+                                child: new Text("Recognized"),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context)
+                                      {
+                                        return new ScorePage(
+                                          data: new ScoreData(
+                                            number: "0",
+                                            athlete: "Athlete Name",
+                                            origin: "--",
+                                            category: "Category",
+                                            round: "Round",
+                                            poomsae: "Poomsae",
+                                            poomsae_number: "#",
+                                            judge: "Judge number #",
+                                          )
+                                        );
+                                      }
+                                    )
+                                  );
+                                },
+                              ),
+                              new FlatButton(
+                                child: new Text("Freestyle"),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        }
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
