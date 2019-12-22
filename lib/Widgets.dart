@@ -500,7 +500,7 @@ class ScoreRecognizedState extends State<ScoreRecognizedDisplay> {
         child: Row(
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 10.0, bottom: 10.0),
+              padding: EdgeInsets.only(left: 10.0, right: 10.0, top: 10.0, bottom: 10.0),
               child: Text("$_total",
                 style: TextStyle(fontSize: 60, color: Colors.yellow),
 
