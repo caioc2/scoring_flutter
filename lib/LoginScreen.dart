@@ -1,30 +1,33 @@
 import 'dart:developer';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:scoring_flutter/WaitScreen.dart';
+import 'package:scoring_flutter/WebSocketController.dart';
 import 'package:scoring_flutter/Widgets.dart';
 import 'package:scoring_flutter/ScoringFreestyleScreen.dart';
 import 'package:scoring_flutter/ScoringRecognizedScreen.dart';
+import 'dart:async';
 
 
 
 class LoginPage extends StatefulWidget {
   @override
-  _LoginPageState createState() => _LoginPageState();
+  LoginPageState createState() => LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class LoginPageState extends State<LoginPage> {
 
-
+  WebSocketsController _ws;
   final _login_form = GlobalKey<FormState>();
-  int _offline_mode = 0;
 
   String _login;
   String _ip_address;
 
   final loginController = TextEditingController();
   bool loginListenerState = false;
-  final ipAddressController = TextEditingController();
+  final ipAddressController = TextEditingController(text: "192.168.0.1");
   bool ipAddressListenerState = false;
 
   @override
@@ -54,6 +57,18 @@ class _LoginPageState extends State<LoginPage> {
    });
   }
 
+  bool _loginState = false;
+
+  Future<bool> checkLoginState() {
+    return new Future.delayed(Duration(milliseconds: 100), () {
+      if(_loginState) {
+        return checkLoginState();
+      } else {
+        return false;
+      }
+    });
+  }
+
   @override
   void dispose() {
     // Clean up the controller when the widget is removed from the widget tree.
@@ -80,28 +95,102 @@ class _LoginPageState extends State<LoginPage> {
               style: TextStyle(fontSize: 20),
             ),
             TextFormField(
-                controller: loginController,
-                keyboardType: TextInputType.text,
-                onSaved: (String v) {_login = v;},
-                decoration: InputDecoration(labelText: "Login")),
+              controller: loginController,
+              keyboardType: TextInputType.text,
+              onSaved: (String v) {_login = v;},
+              decoration: InputDecoration(labelText: "Login"),
+              validator: (val) {
+                _login = loginController.text;
+                return validateLogin(val);
+              },
+            ),
             TextFormField(
-                controller: ipAddressController,
-                keyboardType: TextInputType.number,
-                onSaved: (String v) {_ip_address = v;},
-                decoration: InputDecoration(labelText: "IP Address"),
-                validator: validateIPAddress,
-                //initialValue: "192.168.0.1",
-                ),
-            RaisedButton(child: Text("LOGIN"), onPressed: () {
-                // Validate returns true if the form is valid, or false
-                // otherwise.
-                if (_login_form.currentState.validate()) {
-                  log("VAlid");
+              controller: ipAddressController,
+              keyboardType: TextInputType.number,
+              onSaved: (String v) {_ip_address = v;},
+              decoration: InputDecoration(labelText: "IP Address"),
+              validator: (val) {
+                _ip_address = ipAddressController.text;
+                return validateIPAddress(val);
+              }
+            ),
+            RaisedButton(child: Text("LOGIN"), onPressed: () async {
+              // Validate returns true if the form is valid, or false
+              // otherwise.
+              if (_login_form.currentState.validate()) {
+                _ip_address = ipAddressController.text;
+                _login = loginController.text;
+
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return Container(
+                      width: 20.0,
+                      height: 20.0,
+                      padding: EdgeInsets.all(20.0),
+                      alignment: Alignment.center,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3.0,
+                      ),
+                    );
+                  },
+                );
+                /*new Future.delayed(new Duration(seconds: 3), () {
+                  Navigator.pop(context); //pop dialog
+                });*/
+                bool val = false;
+                try {
+                  _ws = WebSocketsController(_ip_address);
+                  val = await _ws.connect();
+                  val = true;
+                } finally {
+                  if (val) {
+                    _ws.addListener((msg) {
+                      if(_loginState) {
+                        Navigator.of(context).pop(true);
+                        _loginState = false;
+                        if (msg['action'] == SocketAction.Connect) {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context)
+                                  {
+                                    return new WaitPage(
+                                        ws: _ws,
+                                        Judge: msg['judge'],
+                                        Competition: msg['competition'],
+                                    );
+                                  }
+                              )
+                          );
+                        } else {
+                          showMyDiag("Connection", "Could not login as \"$_login\"", context);
+                        }
+                      }
+                    });
+                    _loginState = true;
+                    _ws.send(SocketMessage.EncodeLogin(_login));
+                    new Future(() {
+                       return checkLoginState();
+                    }).timeout(Duration(milliseconds: 2000), onTimeout: () { return null;})
+                      .then( (val){
+                      Navigator.of(context).pop(true);
+                      _loginState = false;
+                      showMyDiag(
+                          "Connection", "Login timeout",
+                          context);
+                    });
+
+                  } else {
+                    Navigator.of(context).pop(true);
+                    showMyDiag("Connection", "Could not connect to $_ip_address", context);
+                  }
                 }
+              }
             }),
             Expanded(
               child: Container(
-                alignment: Alignment.bottomLeft,
+              alignment:Alignment.bottomLeft,
                 child: RaisedButton(
                     child: Text("OFFLINE"),
                     onPressed: () {
@@ -251,3 +340,4 @@ String replaceInvalidCharIPAddress(String value) {
   value = value.substring(0, math.min(maxSize, value.length));
   return value;
 }
+

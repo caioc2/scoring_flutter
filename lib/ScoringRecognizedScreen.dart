@@ -124,7 +124,7 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
       context: context,
       builder: (context) => new AlertDialog(
         title: new Text('Are you sure?'),
-        content: new Text('Do you want to exit an score board'),
+        content: new Text('Do you want to exit the score board'),
         actions: <Widget>[
           new FlatButton(
             onPressed: () => Navigator.of(context).pop(false),

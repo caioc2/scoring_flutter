@@ -1766,3 +1766,20 @@ class TechnicalSkillState extends State<TechnicalSkillDisplay> {
     );
   }
 }
+
+void showMyDiag(String title, String msg, BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) =>
+    new AlertDialog(
+      title: new Text(title),
+      content: new Text(msg),
+      actions: <Widget>[
+        new FlatButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: new Text('Ok'),
+        ),
+      ],
+    ) ?? false,
+  );
+}
