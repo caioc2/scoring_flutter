@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:scoring_flutter/WaitScreen.dart';
 import 'package:scoring_flutter/WebSocketController.dart';
 import 'package:scoring_flutter/Widgets.dart';
 import 'package:scoring_flutter/ScoringFreestyleScreen.dart';
@@ -155,10 +154,8 @@ class LoginPageState extends State<LoginPage> {
                               MaterialPageRoute(
                                   builder: (context)
                                   {
-                                    return new WaitPage(
-                                        ws: _ws,
-                                        Judge: msg['judge'],
-                                        Competition: msg['competition'],
+                                    return new ScoreRecognizedPage(
+                                        enabled: false,
                                     );
                                   }
                               )
@@ -211,6 +208,7 @@ class LoginPageState extends State<LoginPage> {
                                       builder: (context)
                                       {
                                         return new ScoreRecognizedPage(
+                                          recognized: true,
                                           data: ScoreData(
                                             number: "0",
                                             athlete: "Athlete Name",
@@ -236,7 +234,8 @@ class LoginPageState extends State<LoginPage> {
                                     MaterialPageRoute(
                                       builder: (context)
                                       {
-                                        return new ScoreFreestylePage(
+                                        return new ScoreRecognizedPage(
+                                            recognized: false,
                                             data: ScoreData(
                                               number: "0",
                                               athlete: "Athlete Name",

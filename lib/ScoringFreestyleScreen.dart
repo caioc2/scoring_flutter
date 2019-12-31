@@ -2,7 +2,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:scoring_flutter/Widgets.dart';
-import 'dart:developer';
 import 'package:share/share.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:scoring_flutter/ScoringRecognizedScreen.dart';

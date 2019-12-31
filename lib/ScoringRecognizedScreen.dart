@@ -6,6 +6,9 @@ import 'dart:developer';
 import 'package:share/share.dart';
 import 'package:flutter/scheduler.dart';
 
+import 'WebSocketController.dart';
+import 'WebSocketController.dart';
+
 
 class ScoreData {
   final String number;
@@ -44,7 +47,11 @@ class ScoreRecognizedPage extends StatefulWidget {
 
     final ScoreData _data;
     final bool _offline;
-    ScoreRecognizedPage({ScoreData data, Key key, bool offline = true})   : _data = data, _offline = offline,  super(key: key);
+    final bool _enabled;
+    final WebSocketsController _ws;
+
+    bool _recognized;
+    ScoreRecognizedPage({WebSocketsController ws, ScoreData data, Key key,bool recognized = true, bool enabled = true, bool offline = true})   : _ws = ws, _data = data, _recognized = recognized, _enabled = enabled, _offline = offline,  super(key: key);
     @override
     ScoreRecognizedPageState createState() => ScoreRecognizedPageState();
 
@@ -58,13 +65,17 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
   final _scoreDisplay = new GlobalKey<ScoreRecognizedState>();
   final _timerDisplay = new GlobalKey<TimerState>();
   final _accuracyDisplay = new GlobalKey<AccuracyState>();
+  final _presentationFSScore = new GlobalKey<PresentationFSState>();
+  final _technicalSkillScore = new GlobalKey<TechnicalSkillState>();
 
-  double _acc, _pres;
+  double _acc, _pres, _ts;
 
   final double _maxPresentation = 6.0;
   final double _maxAccuracy = 4.0;
   final double _majorDiscount = 0.3;
   final double _minorDiscount = 0.1;
+  final double _maxPresentationFS = 4.0;
+  final double _maxTechnicalSkill = 6.0;
 
   @override
   void initState() {
@@ -76,8 +87,46 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
     ]);
     SchedulerBinding.instance.addPostFrameCallback((_) => updateScore());
   }
-  
+
   void updateScore() {
+    if(widget._recognized) {
+      updateScoreR();
+    } else {
+      updateScoreFS();
+    }
+  }
+
+  void share() {
+    if(widget._recognized) {
+      shareR();
+    } else {
+      shareFS();
+    }
+  }
+
+  void reset() {
+    if(widget._recognized) {
+      resetR();
+    } else {
+      resetFS();
+    }
+  }
+
+  void send() {
+    if(widget._recognized) {
+      sendR();
+    } else {
+      sendFS();
+    }
+  }
+
+  void startStop() {
+    _timerDisplay.currentState.toggle();
+  }
+
+///////////////////////Recognized//////////////////////////
+  
+  void updateScoreR() {
     int c1 = _minorAccuracy.currentState.getCount();
     int c2 = _majorAccuracy.currentState.getCount();
     
@@ -93,7 +142,7 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
     _scoreDisplay.currentState.setPresentation(_pres);
   }
 
-  void share() {
+  void shareR() {
     updateScore();
     Share.share(
       "Poomsae score\n" +
@@ -103,11 +152,9 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
     );
   }
 
-  void startStop() {
-    _timerDisplay.currentState.toggle();
-  }
 
-  void reset() {
+
+  void resetR() {
     _minorAccuracy.currentState.resetCount();
     _majorAccuracy.currentState.resetCount();
     _presentationScore.currentState.reset();
@@ -115,9 +162,55 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
     updateScore();
   }
 
-  void send() {
+  void sendR() {
 
   }
+
+///////////////////////FreeStyle//////////////////////////
+
+  void updateScoreFS() {
+    _ts = _technicalSkillScore.currentState.getAcrobatic() +
+        _technicalSkillScore.currentState.getBasic() +
+        _technicalSkillScore.currentState.getHeight() +
+        _technicalSkillScore.currentState.getKicks() +
+        _technicalSkillScore.currentState.getSparring() +
+        _technicalSkillScore.currentState.getSpins();
+    _ts = math.max(math.min(_ts, _maxTechnicalSkill), 0.0);
+
+    _pres = _presentationFSScore.currentState.getEnergy() +
+        _presentationFSScore.currentState.getCoreography() +
+        _presentationFSScore.currentState.getCreativity() +
+        _presentationFSScore.currentState.getHarmony();
+
+    _pres = math.max(math.min(_pres, _maxPresentation), 0.0);
+
+    _scoreDisplay.currentState.setPresentation(_pres);
+    _scoreDisplay.currentState.setAccuracy(_ts);
+  }
+
+  void shareFS() {
+    updateScore();
+    Share.share(
+        "Poomsae score\n" +
+            "Total: " + (_ts + _pres).toStringAsFixed(1) + "\n" +
+            "Technichal skill: " + _ts.toStringAsFixed(1) + "\n" +
+            "Presentation: " + _pres.toStringAsFixed(1)
+    );
+  }
+
+
+  void resetFS() {
+    _presentationFSScore.currentState.reset();
+    _technicalSkillScore.currentState.reset();
+    _timerDisplay.currentState.reset();
+    updateScore();
+  }
+
+  void sendFS() {
+
+  }
+
+  ///////////////////////OnPop//////////////////////////
 
   Future<bool> _onWillPop() {
     return showDialog(
@@ -147,6 +240,69 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
     ) ?? false;
   }
 
+  Widget _buildScoreButtons() {
+    if(widget._recognized) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Flexible(
+            child: LeftButton(
+              key: _majorAccuracy,
+              onChanged: () {
+                updateScore();
+              },
+            ),
+          ),
+          Column(
+            children: <Widget>[
+              AccuracyDisplay(
+                key: _accuracyDisplay,
+              ),
+              Container(
+                height: 10,
+              ),
+              PresentationDisplay(
+                key: _presentationScore,
+                onChanged: () {
+                  updateScore();
+                },
+              ),
+            ],
+          ),
+          Flexible(
+            child: RightButton(
+              key: _minorAccuracy,
+              onChanged: () {
+                updateScore();
+              },
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          TechnicalSkillDisplay(
+            key: _technicalSkillScore,
+            onChanged: () {
+              updateScore();
+            },
+          ),
+          PresentationFSDisplay(
+            key: _presentationFSScore,
+            onChanged: ()
+            {
+              updateScore();
+            },
+          )
+        ],
+      );
+    }
+  }
+
+
+  ///////////////////////Widget build//////////////////////////
   @override
   Widget build(BuildContext context) {
 
@@ -165,15 +321,15 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
                 children: <Widget>[
                   Flexible(
                     child: CompetitorNumberDisplay(
-                      number: widget._data.number,
+                      number: widget._enabled ? widget._data.number : "",
                     ),
                   ),
                   CategoryDisplay(
-                    name: widget._data.category,
+                    name: widget._enabled ? widget._data.category : "Category",
                   ),
                   Flexible(
                     child: RoundDisplay(
-                      name: widget._data.round,
+                      name: widget._enabled ? widget._data.round : "",
                     ),
                   ),
                 ],
@@ -182,8 +338,8 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
                 children: <Widget>[
                   Flexible(
                     child: AthleteDisplay(
-                      name: widget._data.athlete,
-                      origin: widget._data.origin,
+                      name: widget._enabled ? widget._data.athlete : "Waiting for data...",
+                      origin: widget._enabled ? widget._data.origin : "",
                     ),
                   ),
                   Column(
@@ -191,9 +347,10 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
                       TimerDisplay(
                         key: _timerDisplay,
                       ),
-                      PoomsaeDisplay(
-                        name: widget._data.poomsae,
-                        number: widget._data.poomsae_number,
+                      if(widget._recognized )
+                        PoomsaeDisplay(
+                        name: widget._enabled ? widget._data.poomsae : "Poomsae",
+                        number: widget._enabled ? widget._data.poomsae_number : "#",
                       ),
                     ],
                   ),
@@ -208,48 +365,12 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
                 children: <Widget>[
                   Expanded(
                     child: JudgeDisplay(
-                      name: widget._data.judge,
+                      name: widget._enabled ? widget._data.judge : "Judge number #",
                     ),
                   ),
                 ],
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Flexible(
-                    child: LeftButton(
-                      key: _majorAccuracy,
-                      onChanged: (){
-                        updateScore();
-                      },
-                    ),
-                  ),
-                  Column(
-                    children: <Widget>[
-                      AccuracyDisplay(
-                        key: _accuracyDisplay,
-                      ),
-                      Container(
-                        height: 10,
-                      ),
-                      PresentationDisplay(
-                        key: _presentationScore,
-                        onChanged: () {
-                          updateScore();
-                        },
-                      ),
-                    ],
-                  ),
-                  Flexible(
-                    child: RightButton(
-                      key: _minorAccuracy,
-                      onChanged: () {
-                        updateScore();
-                      },
-                    ),
-                  ),
-                ],
-              ),
+              _buildScoreButtons(),
               Expanded(
                 child: Container(
                   alignment: Alignment.center,
