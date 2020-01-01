@@ -981,9 +981,7 @@ class ControlButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: FlatButton(
-        onPressed: () {
-          _callback();
-        },
+        onPressed: _callback,
         child: Text("$_text",
           style: TextStyle(fontSize: 20, color: Colors.white),
           textAlign: TextAlign.center,

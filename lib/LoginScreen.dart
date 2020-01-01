@@ -9,6 +9,13 @@ import 'package:scoring_flutter/ScoringFreestyleScreen.dart';
 import 'package:scoring_flutter/ScoringRecognizedScreen.dart';
 import 'dart:async';
 
+import 'WebSocketController.dart';
+import 'WebSocketController.dart';
+import 'WebSocketController.dart';
+import 'WebSocketController.dart';
+import 'WebSocketController.dart';
+import 'WebSocketController.dart';
+
 
 
 class LoginPage extends StatefulWidget {
@@ -31,6 +38,12 @@ class LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     super.initState();
    loginController.addListener(() {
       if(loginController.text != _login) {
@@ -134,55 +147,46 @@ class LoginPageState extends State<LoginPage> {
                     );
                   },
                 );
-                /*new Future.delayed(new Duration(seconds: 3), () {
-                  Navigator.pop(context); //pop dialog
-                });*/
-                bool val = false;
+                bool connected = false;
+                RequestState state = RequestState.Denied;
                 try {
                   _ws = WebSocketsController(_ip_address);
-                  val = await _ws.connect();
-                  val = true;
-                } finally {
-                  if (val) {
-                    _ws.addListener((msg) {
-                      if(_loginState) {
-                        Navigator.of(context).pop(true);
-                        _loginState = false;
-                        if (msg['action'] == SocketAction.Connect) {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context)
-                                  {
-                                    return new ScoreRecognizedPage(
-                                        enabled: false,
-                                    );
-                                  }
-                              )
-                          );
-                        } else {
-                          showMyDiag("Connection", "Could not login as \"$_login\"", context);
-                        }
-                      }
-                    });
-                    _loginState = true;
-                    _ws.send(SocketMessage.EncodeLogin(_login));
-                    new Future(() {
-                       return checkLoginState();
-                    }).timeout(Duration(milliseconds: 2000), onTimeout: () { return null;})
-                      .then( (val){
-                      Navigator.of(context).pop(true);
-                      _loginState = false;
-                      showMyDiag(
-                          "Connection", "Login timeout",
-                          context);
+                  connected = await _ws.connect();
+                  state = await _ws.sendAndWait({
+                      'action': SocketAction.Connect.toString(),
+                      'login': _login,
                     });
 
+                } finally {
+                  Navigator.of(context).pop(true);
+                  if (connected) {
+                    switch(state){
+                      case RequestState.Succeed:
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context)
+                                {
+                                  return new ScoreRecognizedPage(
+                                    enabled: false,
+                                    ws: _ws,
+                                  );
+                                }
+                            )
+                        );
+                        break;
+                      case RequestState.Timeout:
+                        showMyDiag("Connection", "Login timeout",context);
+                        break;
+                      case RequestState.Denied:
+                      default:
+                        showMyDiag("Connection", "Could not login as \"$_login\"", context);
+                        break;
+                    }
                   } else {
-                    Navigator.of(context).pop(true);
                     showMyDiag("Connection", "Could not connect to $_ip_address", context);
                   }
-                }
+                } //Finally
               }
             }),
             Expanded(

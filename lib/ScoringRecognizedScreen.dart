@@ -21,7 +21,7 @@ class ScoreData {
   final String category;
 
   ScoreData({String number = "-1", String athlete = "None", String origin = "None", String judge = "None",
-    String poomsae = "None", String round = "None", String category = "None", String poomsae_number}) :
+    String poomsae = "None", String round = "None", String category = "None", String poomsae_number = "None"}) :
         this.number = number,
         this.athlete = athlete,
         this.origin = origin,
@@ -51,11 +51,14 @@ class ScoreRecognizedPage extends StatefulWidget {
     final WebSocketsController _ws;
 
     bool _recognized;
-    ScoreRecognizedPage({WebSocketsController ws, ScoreData data, Key key,bool recognized = true, bool enabled = true, bool offline = true})   : _ws = ws, _data = data, _recognized = recognized, _enabled = enabled, _offline = offline,  super(key: key);
+    ScoreRecognizedPage({WebSocketsController ws, ScoreData data, Key key,bool recognized = true, bool enabled = true, bool offline = true}) :
+          _ws = ws, _data = data, _recognized = recognized, _enabled = enabled, _offline = offline,  super(key: key);
     @override
-    ScoreRecognizedPageState createState() => ScoreRecognizedPageState();
+    ScoreRecognizedPageState createState() => ScoreRecognizedPageState(_data);
 
 }
+
+enum ScoreBoardState {WaitingData, Ready, Running, Completed}
 
 class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
 
@@ -76,6 +79,11 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
   final double _minorDiscount = 0.1;
   final double _maxPresentationFS = 4.0;
   final double _maxTechnicalSkill = 6.0;
+
+  ScoreData _data;
+
+  ScoreRecognizedPageState(ScoreData data) : _data = data;
+
 
   @override
   void initState() {
@@ -118,6 +126,15 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
     } else {
       sendFS();
     }
+  }
+
+  void setData(ScoreData data, {bool reset = false}) {
+    if(reset) {
+      this.reset();
+    }
+    setState(() {
+      _data = data;
+    });
   }
 
   void startStop() {
@@ -321,15 +338,15 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
                 children: <Widget>[
                   Flexible(
                     child: CompetitorNumberDisplay(
-                      number: widget._enabled ? widget._data.number : "",
+                      number: widget._enabled ? _data.number : "",
                     ),
                   ),
                   CategoryDisplay(
-                    name: widget._enabled ? widget._data.category : "Category",
+                    name: widget._enabled ? _data.category : "Category",
                   ),
                   Flexible(
                     child: RoundDisplay(
-                      name: widget._enabled ? widget._data.round : "",
+                      name: widget._enabled ? _data.round : "",
                     ),
                   ),
                 ],
@@ -338,8 +355,8 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
                 children: <Widget>[
                   Flexible(
                     child: AthleteDisplay(
-                      name: widget._enabled ? widget._data.athlete : "Waiting for data...",
-                      origin: widget._enabled ? widget._data.origin : "",
+                      name: widget._enabled ? _data.athlete : "Waiting for data...",
+                      origin: widget._enabled ? _data.origin : "",
                     ),
                   ),
                   Column(
@@ -349,8 +366,8 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
                       ),
                       if(widget._recognized )
                         PoomsaeDisplay(
-                        name: widget._enabled ? widget._data.poomsae : "Poomsae",
-                        number: widget._enabled ? widget._data.poomsae_number : "#",
+                        name: widget._enabled ? _data.poomsae : "Poomsae",
+                        number: widget._enabled ? _data.poomsae_number : "#",
                       ),
                     ],
                   ),
@@ -365,7 +382,7 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
                 children: <Widget>[
                   Expanded(
                     child: JudgeDisplay(
-                      name: widget._enabled ? widget._data.judge : "Judge number #",
+                      name: widget._enabled ? _data.judge : "Judge number #",
                     ),
                   ),
                 ],
@@ -377,10 +394,10 @@ class ScoreRecognizedPageState extends State<ScoreRecognizedPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: buildButtons(widget._offline,
-                            () {reset();},
-                            () {send();},
-                            () {startStop();},
-                            () {share();}),
+                            reset,
+                            send,
+                            startStop,
+                            share,)
                   ),
                 ),
               ),

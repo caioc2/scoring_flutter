@@ -12,10 +12,8 @@ class WebSocketsController {
   final String _address;
   static String _port = "5050";
   static int _timeOut = 1000;
-  final int _pingDuration = 200;//milliseconds
 
   var _m;
-  String _token = "";
   ObserverList<Function> _listeners = new ObserverList<Function>();
 
   WebSocketsController(String address) : _address = "ws://" + address + ":" + _port;
@@ -37,9 +35,6 @@ class WebSocketsController {
   /// Is the connection established?
   ///
   bool _isOn = false;
-  /// ----------------------------------------------------------
-  /// Initialization the WebSockets connection with the server
-  /// ----------------------------------------------------------
   Future<bool> connect () async {
     reset();
 
@@ -58,9 +53,6 @@ class WebSocketsController {
     return false;
   }
 
-  /// ----------------------------------------------------------
-  /// Closes the WebSocket communication
-  /// ----------------------------------------------------------
   void reset(){
     if (_channel != null){
       if (_channel.sink != null){
@@ -70,9 +62,6 @@ class WebSocketsController {
     }
   }
 
-  /// ---------------------------------------------------------
-  /// Sends a message to the server
-  /// ---------------------------------------------------------
   void send(String message){
     if (_channel != null){
       if (_channel.sink != null && _isOn){
@@ -83,15 +72,40 @@ class WebSocketsController {
     _isOn = false;
   }
 
-  /// ---------------------------------------------------------
-  /// Adds a callback to be invoked in case of incoming
-  /// notification
-  /// ---------------------------------------------------------
+  Future<RequestState> sendAndWait(Map data, {VoidCallback onTimeout}) async {
 
-  /// ----------------------------------------------------------
-  /// Callback which is invoked each time that we are receiving
-  /// a message from the server
-  /// ----------------------------------------------------------
+    RequestState result = RequestState.Denied;
+    if(validateFields(data)) {
+      Wait w = new Wait(action: data['action']);
+      addListener(w.listener);
+      send(json.encode(data).toString());
+      result = await w.checkState();
+      removeListener(w.listener);
+    }else {
+      throw new Exception("Unsuported data or action. Action: " + data.toString());
+    }
+    return result;
+  }
+
+  bool validateFields(Map data) {
+    if(data.containsKey('action')) {
+      switch(stringToEnumAction(data['action'])) {
+        case SocketAction.Connect:
+          if(data.length == 2 && data.containsKey('login')) return true;
+
+          return false;
+        case SocketAction.SendScore:
+          if(data.length == 3 && data.containsKey('accuracy') && data.containsKey('presentation')) return true;
+
+          return false;
+        default:
+          return false;
+      }
+    }
+    return false;
+  }
+
+
   _onReceptionOfMessageFromServer(message){
     _isOn = true;
     _m = jsonDecode(message);
@@ -115,23 +129,48 @@ class WebSocketsController {
   }
 }
 
+class Wait {
+  bool _rec = false;
+  final String _act;
+
+  Wait({@required String action}) : _act = action;
+
+  void listener(msg) {
+    if(msg['action'] == _act) {
+       _rec =  true;
+    }
+  }
+
+  Future<RequestState> _checkState() {
+    return new Future.delayed(Duration(milliseconds: 100), () {
+      if(!_rec) {
+        return _checkState();
+      } else {
+        return RequestState.Succeed;
+      }
+    });
+  }
+
+  Future<RequestState> checkState({int timeout = 2000}) {
+    return _checkState().timeout(Duration(milliseconds: timeout), onTimeout: () {
+      return RequestState.Timeout;
+    });
+  }
+}
+
+enum RequestState {Succeed, Denied, Timeout}
+
+
 enum SocketAction {Connect, Disconnect, AthleteData, PoomsaeStart, PoomsaeEnd, SendScore, Unknow}
 
 SocketAction stringToEnumAction(String s) {
-  List<SocketAction> act1 = SocketAction.values;
-  List<String> act2 = (SocketAction.values).map((act) => act.toString());
+  final List<SocketAction> act1 = SocketAction.values;
+  final List<String> act2 = (SocketAction.values).map((act) => act.toString()).toList();
 
   int idx = act2.indexOf(s);
   if(idx >= 0) {
     return act1[idx];
   }
   return SocketAction.Unknow;
-}
-
-class SocketMessage {
-
-  static String EncodeLogin(String login) {
-    return "{login:  $login, action: " + SocketAction.Connect.toString() + "}";
-  }
 }
 
